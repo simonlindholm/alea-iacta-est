@@ -53,32 +53,24 @@ function delta(from, to, speed) {
 }
 
 function startGame(tm, player, enemy) {
-	var ncities = 0;
-	var missilesRemaining = 0;
 	var playing = false;
 	var whichRound = 0;
-	var speed = 0;
 	var HEIGHT = 600;
 	var EXPL_RAD = 50;
-	var activePlayerMissiles = [];
-	var activeEnemyMissiles = [];
-	function newRound() {
-		playing = true;
-		++ncities;
+	var activePlayerMissiles, activeEnemyMissiles;
+	var speed;
+	function round() {
 		++whichRound;
+		playing = true;
+		var ncities = whichRound;
 		speed = Math.pow(1.25, whichRound) * HEIGHT / 5 / (1000 / 16);
-		missilesRemaining = ncities * 3;
+		var missilesRemaining = ncities * 3;
+		activePlayerMissiles = [];
+		activeEnemyMissiles = [];
 		player.emit("round", {cities: ncities, missiles: missilesRemaining});
 		enemy.emit("round", {cities: ncities, missiles: missilesRemaining});
-	}
-	player.on("shoot", function(data) {
-		activePlayerMissiles.push({pos: from, delta: delta(from, to, speed), target: to});
-	});
-	enemy.on("shoot", function(data) {
-		activeEnemyMissiles.push({pos: from, delta: delta(from, to, speed)});
-	});
-	function loop() {
-		if (playing) {
+
+		function loop() {
 			for (var i = 0; i < activePlayerMissiles.length; ++i) {
 				var m = activePlayerMissiles[i];
 				m.pos.x += m.delta.dx;
@@ -95,18 +87,28 @@ function startGame(tm, player, enemy) {
 						if (d < EXPL_RAD) {
 							activeEnemyMissiles.splice(1, j);
 							--j;
+							--missilesRemaining;
 						}
 					}
 					activePlayerMissiles.splice(i, 1);
 					--i;
 				}
 			}
+			for (var i = 0; i < activeEnemyMissiles.length; ++i) {
+
+			}
 			player.emit("frame", [activePlayerMissiles, activeEnemyMissiles]);
+			tm.set(loop, 16);
 		}
 		tm.set(loop, 16);
 	}
-	tm.set(loop, 16);
-	newRound();
+	player.on("shoot", function(data) {
+		activePlayerMissiles.push({pos: from, delta: delta(from, to, speed), target: to});
+	});
+	enemy.on("shoot", function(data) {
+		activeEnemyMissiles.push({pos: from, delta: delta(from, to, speed)});
+	});
+	round();
 }
 
 var websocket = io.listen(app);
@@ -114,14 +116,14 @@ var q = [];
 var socketQueue = {};
 var gameTimers = {};
 websocket.sockets.on("connection", function(socket){
-	console.log("Client connect", socket + "");
+	console.log("Client connect", socket.id + "");
 
 	socket.on("init", function(data) {
 		q.push(socket);
-		socketQueue[socket] = [q];
+		socketQueue[socket.id] = [q];
 		if (q.length == 2) {
 			var tm = new Timer;
-			gameTimers[socket] = tm;
+			gameTimers[socket.id] = tm;
 			startGame(tm, q[0], q[1]);
 			q = [];
 		}
@@ -129,12 +131,12 @@ websocket.sockets.on("connection", function(socket){
 	});
 
 	socket.on("disconnect", function() {
-		que = socketQueue[socket];
+		que = socketQueue[socket.id];
 		if (!que) return;
-		delete socketQueue[socket];
-		var tm = gameTimers[socket];
+		delete socketQueue[socket.id];
+		var tm = gameTimers[socket.id];
 		if (tm) tm.clear();
-		delete gameTimers[socket];
+		delete gameTimers[socket.id];
 		if (que.length == 1)
 			q = [];
 		else {
