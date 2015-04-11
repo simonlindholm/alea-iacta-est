@@ -59,6 +59,9 @@ function startGame(tm, player, enemy) {
 	var whichRound = 0;
 	var speed = 0;
 	var HEIGHT = 600;
+	var EXPL_RAD = 50;
+	var activePlayerMissiles = [];
+	var activeEnemyMissiles = [];
 	function newRound() {
 		playing = true;
 		++ncities;
@@ -111,7 +114,7 @@ var q = [];
 var socketQueue = {};
 var gameTimers = {};
 websocket.sockets.on("connection", function(socket){
-	console.log("Client connect", socket);
+	console.log("Client connect", socket + "");
 
 	socket.on("init", function(data) {
 		q.push(socket);
