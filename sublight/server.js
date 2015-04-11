@@ -59,6 +59,11 @@ function startGame(tm, player, enemy) {
 	var EXPL_RAD = 50;
 	var activePlayerMissiles, activeEnemyMissiles;
 	var speed;
+	function emit() {
+		player.emit.apply(player, arguments);
+		enemy.emit.apply(enemy, arguments);
+	}
+
 	function round() {
 		++whichRound;
 		playing = true;
@@ -72,8 +77,7 @@ function startGame(tm, player, enemy) {
 		var missilesRemaining = whichRound * 3;
 		activePlayerMissiles = [];
 		activeEnemyMissiles = [];
-		player.emit("round", {cities: cities, missiles: missilesRemaining});
-		enemy.emit("round", {cities: cities, missiles: missilesRemaining});
+		emit("round", {cities: cities, missiles: missilesRemaining});
 
 		function loop() {
 			for (var i = 0; i < activePlayerMissiles.length; ++i) {
@@ -82,8 +86,7 @@ function startGame(tm, player, enemy) {
 				m.pos.y += m.delta.dy;
 				var rem = {x: m.to.x - m.pos.x, y: m.to.y - m.pos.y};
 				if (rem.x*m.delta.dx + rem.y*m.delta.dy < 0) {
-					player.emit("playerMissileExplode", m.pos);
-					enemy.emit("playerMissileExplode", m.pos);
+					emit("playerMissileExplode", m.pos);
 					for (var j = 0; j < activeEnemyMissiles.length; ++j) {
 						var m2 = activeEnemyMissiles[j];
 						var dx = m2.pos.x - m.pos.x;
@@ -99,9 +102,10 @@ function startGame(tm, player, enemy) {
 					--i;
 				}
 			}
+
 			for (var i = 0; i < activeEnemyMissiles.length; ++i) {
 				var m = activeEnemyMissiles[i];
-				if (m.pos.x < -30 || m.pos.x > WIDTH + 30 || m.pos.y > HEIGHT + 30 || m.pos.y < -30) {
+				if (m.pos.x < -100 || m.pos.x > WIDTH + 100 || m.pos.y > HEIGHT + 30 || m.pos.y < -30) {
 					activeEnemyMissiles.splice(i, 1);
 					--i;
 					--missilesRemaining;
@@ -116,24 +120,39 @@ function startGame(tm, player, enemy) {
 						cities.splice(j, 1);
 						var ind = cityInds[j];
 						cityInds.splice(j, 1);
-						player.emit("cityExplode", {index: ind, index2: j, pos: cities[j]});
-						enemy.emit("cityExplode", {index: ind, index2: j, pos: cities[j]});
+						emit("cityExplode", {index: ind, index2: j, pos: cities[j]});
 						--j;
 					}
 				}
 			}
-			player.emit("frame", [activePlayerMissiles, activeEnemyMissiles, cities]);
-			enemy.emit("frame", [activePlayerMissiles, activeEnemyMissiles, cities]);
+
+			emit("frame", [activePlayerMissiles, activeEnemyMissiles, cities]);
+
+			if (!cities.length) {
+				emit("gameover");
+				playing = false;
+				return;
+			}
+
+			if (!missilesRemaining) {
+				emit("wonlevel");
+				playing = false;
+				tm.set(round, 1500);
+				return;
+			}
+
 			tm.set(loop, 16);
 		}
 		tm.set(loop, 16);
 	}
 	player.on("shoot", function(data) {
+		if (!playing) return;
 		var from = data.from;
 		var to = data.to;
 		activePlayerMissiles.push({pos: from, delta: delta(from, to, speed), target: to});
 	});
 	enemy.on("shoot", function(data) {
+		if (!playing) return;
 		var from = data.from;
 		var to = data.to;
 		if (from.y == to.y) to.y = from.y + 1;
