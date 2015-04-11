@@ -64,15 +64,14 @@ function startGame(tm, player, enemy) {
 		playing = true;
 		var ncities = whichRound;
 		var cities = [];
-		for (var i = 0; i < ncities; ++i) {
-
-		}
+		for (var i = 0; i < ncities; ++i)
+			cities.push({x: (i+0.5)/ncities * WIDTH, y: HEIGHT - 50});
 		speed = Math.pow(1.25, whichRound) * HEIGHT / 5 / (1000 / 16);
-		var missilesRemaining = ncities * 3;
+		var missilesRemaining = whichRound * 3;
 		activePlayerMissiles = [];
 		activeEnemyMissiles = [];
-		player.emit("round", {cities: ncities, missiles: missilesRemaining});
-		enemy.emit("round", {cities: ncities, missiles: missilesRemaining});
+		player.emit("round", {cities: cities, missiles: missilesRemaining});
+		enemy.emit("round", {cities: cities, missiles: missilesRemaining});
 
 		function loop() {
 			for (var i = 0; i < activePlayerMissiles.length; ++i) {
