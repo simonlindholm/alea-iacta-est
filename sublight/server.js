@@ -116,14 +116,15 @@ function startGame(tm, player, enemy) {
 				}
 
 				for (var j = 0; j < cities.length; ++j) {
-					var dx = cities[j].x - m.pos.x;
-					var dy = cities[j].y - m.pos.y;
+					var c = cities[j];
+					var dx = c.x - m.pos.x;
+					var dy = c.y - m.pos.y;
 					var d = Math.sqrt(dx*dx + dy*dy);
 					if (d < CITY_HITBOX) {
 						cities.splice(j, 1);
 						var ind = cityInds[j];
 						cityInds.splice(j, 1);
-						emit("cityExplode", {index: ind, index2: j, pos: cities[j]});
+						emit("cityExplode", {index: ind, index2: j, pos: c});
 						--j;
 					}
 				}
