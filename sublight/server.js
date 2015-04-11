@@ -55,7 +55,7 @@ function delta(from, to, speed) {
 function startGame(tm, player, enemy) {
 	var playing = false;
 	var whichRound = 0;
-	var HEIGHT = 600;
+	var HEIGHT = 600, WIDTH = 800;
 	var EXPL_RAD = 50;
 	var activePlayerMissiles, activeEnemyMissiles;
 	var speed;
@@ -63,6 +63,10 @@ function startGame(tm, player, enemy) {
 		++whichRound;
 		playing = true;
 		var ncities = whichRound;
+		var cities = [];
+		for (var i = 0; i < ncities; ++i) {
+
+		}
 		speed = Math.pow(1.25, whichRound) * HEIGHT / 5 / (1000 / 16);
 		var missilesRemaining = ncities * 3;
 		activePlayerMissiles = [];
@@ -85,7 +89,7 @@ function startGame(tm, player, enemy) {
 						var dy = m2.pos.y - m.pos.y;
 						var d = Math.sqrt(dx*dx + dy*dy);
 						if (d < EXPL_RAD) {
-							activeEnemyMissiles.splice(1, j);
+							activeEnemyMissiles.splice(j, 1);
 							--j;
 							--missilesRemaining;
 						}
@@ -95,7 +99,13 @@ function startGame(tm, player, enemy) {
 				}
 			}
 			for (var i = 0; i < activeEnemyMissiles.length; ++i) {
-
+				var m = activeEnemyMissiles[i];
+				if (m.x < -30 || m.x > WIDTH + 30 || m.y > HEIGHT + 30 || m.y < -30) {
+					activeEnemyMissiles.splice(i, 1);
+					--i;
+					--missilesRemaining;
+					continue;
+				}
 			}
 			player.emit("frame", [activePlayerMissiles, activeEnemyMissiles]);
 			tm.set(loop, 16);
@@ -120,7 +130,7 @@ websocket.sockets.on("connection", function(socket){
 
 	socket.on("init", function(data) {
 		q.push(socket);
-		socketQueue[socket.id] = [q];
+		socketQueue[socket.id] = q;
 		if (q.length == 2) {
 			var tm = new Timer;
 			gameTimers[socket.id] = tm;
