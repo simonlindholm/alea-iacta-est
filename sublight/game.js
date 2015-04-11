@@ -196,7 +196,6 @@ function drawMissile(mis, type){
     ctx.translate(pos.x, pos.y);
     ctx.rotate(angle);
     ctx.translate(-42, 0);
-    ctx.fillRect(0, 0, 10, 10);
     ctx.scale(0.4, 0.4);
     if(type == "defender") ctx.drawImage(niceMissile, 0, 0);
     else ctx.drawImage(evilMissile, 0, 0);
