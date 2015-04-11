@@ -56,7 +56,6 @@ socket.on("playerMissileExplode", function(cur){
 var explosions = [];
 
 function makeExplosion(pos){
-    console.log(pos);
     explosions.push([pos, 60]);
 }
 
