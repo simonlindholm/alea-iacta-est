@@ -122,17 +122,26 @@ function startGame(tm, player, enemy) {
 					}
 				}
 			}
-			player.emit("frame", [activePlayerMissiles, activeEnemyMissiles]);
-			enemy.emit("frame", [activePlayerMissiles, activeEnemyMissiles]);
+			player.emit("frame", [activePlayerMissiles, activeEnemyMissiles, cities]);
+			enemy.emit("frame", [activePlayerMissiles, activeEnemyMissiles, cities]);
 			tm.set(loop, 16);
 		}
 		tm.set(loop, 16);
 	}
 	player.on("shoot", function(data) {
+		var from = data.from;
+		var to = data.to;
 		activePlayerMissiles.push({pos: from, delta: delta(from, to, speed), target: to});
 	});
 	enemy.on("shoot", function(data) {
-		activeEnemyMissiles.push({pos: from, delta: delta(from, to, speed)});
+		var from = data.from;
+		var to = data.to;
+		if (from.y == to.y) to.y = from.y + 1;
+		var de = delta(from, to, speed);
+		// from.y + (to.y - from.y) * M = 0
+		var M = -from.y / (to.y - from.y);
+		var x = from.x + (to.x - from.x) * M;
+		activeEnemyMissiles.push({pos: {x: x, y: 0}, delta: de});
 	});
 	round();
 }
