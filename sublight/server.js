@@ -85,7 +85,7 @@ function startGame(tm, player, enemy) {
 				var m = activePlayerMissiles[i];
 				m.pos.x += m.delta.dx;
 				m.pos.y += m.delta.dy;
-				var rem = {x: m.to.x - m.pos.x, y: m.to.y - m.pos.y};
+				var rem = {x: m.target.x - m.pos.x, y: m.target.y - m.pos.y};
 				if (rem.x*m.delta.dx + rem.y*m.delta.dy < 0) {
 					emit("playerMissileExplode", m.pos);
 					for (var j = 0; j < activeEnemyMissiles.length; ++j) {
