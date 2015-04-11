@@ -10,6 +10,8 @@ var gameover = false;
 var won = false;
 
 socket.on("connect", function(){
+    roundNo = 0;
+    activeBase = -1;
     started = false;
     defender = false;
     socket.emit("init", {});
@@ -17,7 +19,8 @@ socket.on("connect", function(){
 
 var defender = false;
 
-var sendLeft = 0;
+var sendLeft = 0, sendOrig = 0;
+var roundNo = 0;
 
 socket.on("waiting", function(){
     defender = true;
@@ -28,6 +31,7 @@ socket.on("waiting", function(){
 
 
 socket.on("round", function(state){
+    ++roundNo;
     if(!started){
         showControls(defender);
         if(defender){
@@ -38,7 +42,7 @@ socket.on("round", function(state){
         window.requestAnimationFrame(repaint);
         started = true;
     }
-    sendLeft = state.missiles;
+    sendLeft = sendOrig = state.missiles;
 });
 
 socket.on("frame", function(cur){
@@ -115,8 +119,8 @@ function DefenderInput() {
 function repaint(){
     ctx.clearRect(0, 0, width, height);
     drawBackground();
-    drawInfo();
     drawGame();
+    drawInfo();
     window.requestAnimationFrame(repaint);
 }
 
@@ -130,13 +134,16 @@ function drawBackground(){
 
 function drawInfo(){
     ctx.fillStyle = "#0a0000";
-    ctx.fillText("Missiles left: " + sendLeft, 10, 580);
+    ctx.font = "20px sans-serif";
+    ctx.fillText(sendLeft + "/" + sendOrig, 10, 590);
+    ctx.fillText("round " + roundNo, 710, 590);
     if(gameover){
         drawStatus(won ? "You won!" : "You lost :(");
     }
 }
 
 function drawStatus(str){
+    ctx.font = "20px sans-serif";
     ctx.fillText(str, width/2 - 50, height/2);
 }
 
