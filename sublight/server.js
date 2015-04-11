@@ -63,9 +63,11 @@ function startGame(tm, player, enemy) {
 		++whichRound;
 		playing = true;
 		var ncities = whichRound;
-		var cities = [];
-		for (var i = 0; i < ncities; ++i)
+		var cities = [], cityInds = [];
+		for (var i = 0; i < ncities; ++i) {
 			cities.push({x: (i+0.5)/ncities * WIDTH, y: HEIGHT - 50});
+			cityInds.push(i);
+		}
 		speed = Math.pow(1.25, whichRound) * HEIGHT / 5 / (1000 / 16);
 		var missilesRemaining = whichRound * 3;
 		activePlayerMissiles = [];
@@ -99,14 +101,29 @@ function startGame(tm, player, enemy) {
 			}
 			for (var i = 0; i < activeEnemyMissiles.length; ++i) {
 				var m = activeEnemyMissiles[i];
-				if (m.x < -30 || m.x > WIDTH + 30 || m.y > HEIGHT + 30 || m.y < -30) {
+				if (m.pos.x < -30 || m.pos.x > WIDTH + 30 || m.pos.y > HEIGHT + 30 || m.pos.y < -30) {
 					activeEnemyMissiles.splice(i, 1);
 					--i;
 					--missilesRemaining;
 					continue;
 				}
+
+				for (var j = 0; j < cities.length; ++j) {
+					var dx = cities[j].x - m.pos.x;
+					var dy = cities[j].y - m.pos.y;
+					var d = Math.sqrt(dx*dx + dy*dy);
+					if (d < CITY_HITBOX) {
+						cities.splice(j, 1);
+						var ind = cityInds[j];
+						cityInds.splice(j, 1);
+						player.emit("cityExplode", {index: ind, index2: j, pos: cities[j]});
+						enemy.emit("cityExplode", {index: ind, index2: j, pos: cities[j]});
+						--j;
+					}
+				}
 			}
 			player.emit("frame", [activePlayerMissiles, activeEnemyMissiles]);
+			enemy.emit("frame", [activePlayerMissiles, activeEnemyMissiles]);
 			tm.set(loop, 16);
 		}
 		tm.set(loop, 16);
