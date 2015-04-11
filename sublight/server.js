@@ -207,32 +207,3 @@ websocket.sockets.on("connection", function(socket){
 		}
 	});
 });
-
-/*
-function startGame(pc, roomName){
-	var players = queue[pc][roomName];
-	queue[pc][roomName] = [];
-	var inputs = [];
-	var inputMap = {};
-	for(var i = 0; i<players.length; i++){
-		var socket = players[i];
-		var input = new Input();
-		(function(inp, sock){
-			sock.on("input", function(data){
-				inp.left = data.left || false;
-				inp.up = data.up || false;
-				inp.right = data.right || false;
-				inp.down = data.down || false;
-				inp.bomb = data.bomb || false;
-			});
-		})(input, socket);
-		inputs.push(input);
-		socket.emit("controls", {controls: constants.PLAYER_CONTROLS[i]});
-	}
-	var mapType = map.Maps[0];
-	var gameMap = new map.Map(mapType[0], mapType[1]);
-	var theGame = new game.Game(inputs, gameMap, players);
-	console.log("Game setup");
-	theGame.start();
-}
-*/
