@@ -100,7 +100,7 @@ void mergePartials(int ind1, int ind2, vector<string>& partials) {
 		ofstream fout(name);
 		ifstream fin1(partials[ind1]);
 		ifstream fin2(partials[ind2]);
-		std::experimental::optional<Entry> e1, e2, no_entry;
+		std::experimental::optional<Entry> e1, e2;
 		string line;
 		if (getline(fin1, line)) e1.emplace(line);
 		if (getline(fin2, line)) e2.emplace(line);
@@ -109,10 +109,10 @@ void mergePartials(int ind1, int ind2, vector<string>& partials) {
 			fout << (use1 ? e1->line : e2->line) << '\n';
 			if (use1) {
 				if (getline(fin1, line)) e1.emplace(line);
-				else e1 = no_entry;
+				else e1 = std::experimental::nullopt;
 			} else {
 				if (getline(fin2, line)) e2.emplace(line);
-				else e2 = no_entry;
+				else e2 = std::experimental::nullopt;
 			}
 		}
 	}
