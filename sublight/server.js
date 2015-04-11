@@ -27,6 +27,7 @@ var app = http.createServer(function (req, res) {
 
 function Timer() {
 	this.q = {};
+	this.running = true;
 }
 Timer.prototype.set = function(fn, delay) {
 	var that = this;
@@ -37,21 +38,72 @@ Timer.prototype.set = function(fn, delay) {
 	this.q[id] = 1;
 };
 Timer.prototype.clear = function() {
+	this.running = false;
 	for (var id in this.q)
 		clearTimeout(id);
 };
 
+function delta(from, to, speed) {
+	var dx = to.x - from.x;
+	var dy = to.y - from.y;
+	var scale = Math.sqrt(dx*dx + dy*dy) * speed;
+	dx *= scale;
+	dy *= scale;
+	return {dx:dx, dy:dy};
+}
+
 function startGame(tm, player, enemy) {
 	var ncities = 0;
 	var missilesRemaining = 0;
+	var playing = false;
+	var whichRound = 0;
+	var speed = 0;
+	var HEIGHT = 600;
 	function newRound() {
+		playing = true;
 		++ncities;
+		++whichRound;
+		speed = Math.pow(1.25, whichRound) * HEIGHT / 5 / (1000 / 16);
 		missilesRemaining = ncities * 3;
 		player.emit("round", {cities: ncities, missiles: missilesRemaining});
 		enemy.emit("round", {cities: ncities, missiles: missilesRemaining});
 	}
 	player.on("shoot", function(data) {
+		activePlayerMissiles.push({pos: from, delta: delta(from, to, speed), target: to});
 	});
+	enemy.on("shoot", function(data) {
+		activeEnemyMissiles.push({pos: from, delta: delta(from, to, speed)});
+	});
+	function loop() {
+		if (playing) {
+			for (var i = 0; i < activePlayerMissiles.length; ++i) {
+				var m = activePlayerMissiles[i];
+				m.pos.x += m.delta.dx;
+				m.pos.y += m.delta.dy;
+				var rem = {x: m.to.x - m.pos.x, y: m.to.y - m.pos.y};
+				if (rem.x*m.delta.dx + rem.y*m.delta.dy < 0) {
+					player.emit("playerMissileExplode", m.pos);
+					enemy.emit("playerMissileExplode", m.pos);
+					for (var j = 0; j < activeEnemyMissiles.length; ++j) {
+						var m2 = activeEnemyMissiles[j];
+						var dx = m2.pos.x - m.pos.x;
+						var dy = m2.pos.y - m.pos.y;
+						var d = Math.sqrt(dx*dx + dy*dy);
+						if (d < EXPL_RAD) {
+							activeEnemyMissiles.splice(1, j);
+							--j;
+						}
+					}
+					activePlayerMissiles.splice(i, 1);
+					--i;
+				}
+			}
+			player.emit("frame", [activePlayerMissiles, activeEnemyMissiles]);
+		}
+		tm.set(loop, 16);
+	}
+	tm.set(loop, 16);
+	newRound();
 }
 
 var websocket = io.listen(app);
