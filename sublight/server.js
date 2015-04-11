@@ -56,6 +56,7 @@ function startGame(tm, player, enemy) {
 	var playing = false;
 	var whichRound = 0;
 	var HEIGHT = 600, WIDTH = 800;
+	var CITY_HITBOX = 30;
 	var EXPL_RAD = 50;
 	var activePlayerMissiles, activeEnemyMissiles;
 	var speed;
