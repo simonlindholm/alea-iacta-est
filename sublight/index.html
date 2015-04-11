@@ -1,5 +1,23 @@
 <!DOCTYPE html>
+<html>
+<head>
 <title>Sublight Missile Defense</title>
+<meta charset="UTF-8">
+</head>
 <body>
-<canvas height=800 width=800 id=canvas></canvas>
+<h1>Sublight Missile Defense</h1>
+<canvas height=600 width=800 id="canvas"></canvas>
+<p>Controls:</p>
+<dl id="defender-true" style="display: none">
+    <dt>[defender] a, s, d<dt><dd>Choose tower 1, 2, 3</dd>
+    <dt>[defender] click</dt><dd>Fire missile</dd>
+</dl>
+<dl id="defender-false" style="display: none">
+    <dt>[attacker] drag line and releas</dt><dd>Fire missile</dd>
+</dl>
+
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
 <script src="game.js"></script>
