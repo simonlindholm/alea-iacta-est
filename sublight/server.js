@@ -106,6 +106,8 @@ function startGame(tm, player, enemy) {
 
 			for (var i = 0; i < activeEnemyMissiles.length; ++i) {
 				var m = activeEnemyMissiles[i];
+				m.pos.x += m.delta.dx;
+				m.pos.y += m.delta.dy;
 				if (m.pos.x < -100 || m.pos.x > WIDTH + 100 || m.pos.y > HEIGHT + 30 || m.pos.y < -30) {
 					activeEnemyMissiles.splice(i, 1);
 					--i;
