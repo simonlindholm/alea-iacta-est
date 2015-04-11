@@ -46,7 +46,7 @@ Timer.prototype.clear = function() {
 function delta(from, to, speed) {
 	var dx = to.x - from.x;
 	var dy = to.y - from.y;
-	var scale = Math.sqrt(dx*dx + dy*dy) * speed;
+	var scale = 1/Math.sqrt(dx*dx + dy*dy) * speed;
 	dx *= scale;
 	dy *= scale;
 	return {dx:dx, dy:dy};
@@ -74,7 +74,7 @@ function startGame(tm, player, enemy) {
 			cities.push({x: (i+0.5)/ncities * WIDTH, y: HEIGHT - 50});
 			cityInds.push(i);
 		}
-		speed = Math.pow(1.25, whichRound) * HEIGHT / 5 / (1000 / 16);
+		speed = Math.pow(1.25, whichRound-1) * HEIGHT / 5 / (1000 / 16);
 		var missilesRemaining = whichRound * 3;
 		activePlayerMissiles = [];
 		activeEnemyMissiles = [];
